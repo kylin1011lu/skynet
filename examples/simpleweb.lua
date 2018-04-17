@@ -8,6 +8,20 @@ local string = string
 
 local mode = ...
 
+local save_log =function(content)
+	if not content then
+		return
+	end
+
+	local f = io.open("test.log","w+")
+	if not f then
+		return "Can't open " .. filename
+	end
+	f:write(content)
+	f:close()
+
+end
+
 if mode == "agent" then
 
 local function response(id, ...)
@@ -23,10 +37,12 @@ skynet.start(function()
 		socket.start(id)
 		-- limit request body size to 8192 (you can pass nil to unlimit)
 		local code, url, method, header, body = httpd.read_request(sockethelper.readfunc(id), 8192)
+		skynet.error("this is body:"..body)
 		if code then
 			if code ~= 200 then
 				response(id, code)
 			else
+				save_log(body)
 				local tmp = {}
 				if header.host then
 					table.insert(tmp, string.format("host: %s", header.host))
